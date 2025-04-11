@@ -1,9 +1,9 @@
 import typing as ty
 
-from .. import typs, utils, exceptions
+from .. import may_throw, typs, exceptions
 
 def fetchall(cur: typs.CurTy) -> typs.MayErrTy[typs.ListDictTy[ty.Any]]:
-    rows, err = utils.may_throw(cur.fetchall)
+    rows, err = may_throw(cur.fetchall)
     if err is not None:
         return [], err
 
@@ -15,7 +15,7 @@ def fetchall(cur: typs.CurTy) -> typs.MayErrTy[typs.ListDictTy[ty.Any]]:
     return [dict(zip(cols, x)) for x in rows], None
 
 def fetchone(cur: typs.CurTy) -> typs.MayErrTy[typs.DictTy[ty.Any]]:
-    row, err = utils.may_throw(cur.fetchone)
+    row, err = may_throw(cur.fetchone)
     if err is not None:
         return {}, err
     assert row is None \

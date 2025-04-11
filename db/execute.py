@@ -1,6 +1,6 @@
 import typing as ty
 
-from .. import typs, utils
+from .. import typs, may_throw
 
 from . import cursor
 
@@ -11,7 +11,7 @@ def execute(conn: typs.ConnTy,
             do_rollback_on_error: bool = True
             ) -> ty.Optional[Exception]:
     with conn.cursor() as cur:
-        _, err = utils.may_throw(cur.execute, query, params)
+        _, err = may_throw(cur.execute, query, params)
         if err is not None:
             if do_rollback_on_error is True:
                 conn.rollback()
@@ -30,7 +30,7 @@ def fetchall(conn: typs.ConnTy,
              do_rollback_on_error: bool = True
              ) -> typs.MayErrTy[typs.ListDictTy[ty.Any]]:
     with conn.cursor() as cur:
-        _, err = utils.may_throw(cur.execute, query, params)
+        _, err = may_throw(cur.execute, query, params)
         if err is not None:
             if do_rollback_on_error is True:
                 conn.rollback()
@@ -49,7 +49,7 @@ def fetchone(conn: typs.ConnTy,
              do_rollback_on_error: bool = True
              ) -> typs.MayErrTy[typs.DictTy[ty.Any]]:
     with conn.cursor() as cur:
-        _, err = utils.may_throw(cur.execute, query, params)
+        _, err = may_throw(cur.execute, query, params)
         if err is not None:
             if do_rollback_on_error is True:
                 conn.rollback()
