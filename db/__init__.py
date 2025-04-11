@@ -1,11 +1,11 @@
 import typing as ty
 
+import psycopg2
+import psycopg2.extras
+
 from . import execute, cursor
 
 from .. import typs
-
-import psycopg2
-import psycopg2.extras
 
 class DBInvalidStateError(Exception):
     def __init__(self, msg: str):
