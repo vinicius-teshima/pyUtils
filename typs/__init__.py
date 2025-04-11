@@ -1,17 +1,13 @@
 import typing as ty
 
-try:
-    import psycopg2 as psy
-    ConnTy = psy.extensions.connection
-    CurTy = psy.extensions.cursor
-except:
-    ConnTy = ty.Any
-    CurTy = ty.Any
-    pass
+import psycopg2 as psy
 
 from . import esocial, erp
 
 _T = ty.TypeVar('_T')
+
+ConnTy = psy.extensions.connection
+CurTy = psy.extensions.cursor
 
 DictTy = ty.Dict[str, _T]
 ListDictTy = ty.List[DictTy[_T]]
