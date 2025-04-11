@@ -1,3 +1,4 @@
+import logging
 import typing as ty
 
 from . import typs, value, date
@@ -50,10 +51,27 @@ def may_throw(func: ty.Callable[..., typs._T],
         pass
     return ret
 
+def logger_creator_closure(level: int) -> ty.Callable[[str], logging.Logger]:
+    def logger_creator(name: str) -> logging.Logger:
+        logger = logging.getLogger(name)
+        logger.setLevel(level)
+
+        sh = logging.StreamHandler()
+        fmtr = logging.Formatter(
+            f"[%(asctime)s] [%(levelname)s] [{name}] %(message)s"
+        )
+        sh.setFormatter(fmtr)
+        logger.addHandler(sh)
+        del sh, fmtr
+
+        return logger
+    return logger_creator
+
 __all__ = [
     'needler',
     'may_throw_def',
     'may_throw',
+    'logger_creator_closure',
     'value',
     'date',
     'typs',
