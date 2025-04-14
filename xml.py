@@ -62,6 +62,7 @@ def to_dict(xml: str) -> typs.MayErrTy[XMLDict]:
             or '/' not in xml:
         return XMLDict(), Exception('Invalid XML')
     def _treat_key(key: str) -> str:
+        key = key.strip()
         if ' ' in key:
             key = key.split(' ')[0]
             pass
@@ -104,6 +105,7 @@ def to_dict(xml: str) -> typs.MayErrTy[XMLDict]:
             cur[key] = NotImplementedError('ValueLess XML Leaf')
             continue
         key = _treat_key(key)
+        value = value.strip()
 
         if value == '':
             _t = XMLDict()
