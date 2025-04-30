@@ -26,28 +26,38 @@ def needler(first: ty.Callable[[], typs.MayErrTy[ty.Any]],
 
     return ret, None
 
-def may_throw_def(func: ty.Callable[..., typs._T],
-                  *args: ty.Any,
-                  default: typs._T,
-                  **kwargs: ty.Any
-                  ) -> ty.Tuple[typs._T, ty.Optional[Exception]]:
-    ret: ty.Tuple[typs._T, ty.Optional[Exception]]
-    try:
-        ret = func(*args, **kwargs), None
-    except Exception as err: # pylint: disable=W0718
-        ret = default, err
-        pass
-    return ret
+@ty.overload
+def may_throw(func: ty.Callable[..., typs._T],
+              *args: ty.Any,
+              _default: typs._T,
+              _prev_err: ty.Optional[Exception] = None,
+              **kwargs: ty.Any) -> ty.Tuple[typs._T, ty.Optional[Exception]]:
+    ...
+
+@ty.overload
+def may_throw(func: ty.Callable[..., typs._T],
+              *args: ty.Any,
+              _default: None = None,
+              _prev_err: ty.Optional[Exception] = None,
+              **kwargs: ty.Any) -> ty.Tuple[ty.Optional[typs._T],
+                                            ty.Optional[Exception]]:
+    ...
 
 def may_throw(func: ty.Callable[..., typs._T],
               *args: ty.Any,
+              _default: ty.Optional[typs._T] = None,
+              _prev_err: ty.Optional[Exception] = None,
               **kwargs: ty.Any) -> ty.Tuple[ty.Optional[typs._T],
                                             ty.Optional[Exception]]:
-    ret: ty.Union[ty.Tuple[typs._T, None], ty.Tuple[None, Exception]]
+    if _prev_err is not None:
+        return _default, _prev_err
+
+    ret: ty.Tuple[ty.Optional[typs._T], ty.Optional[Exception]]
     try:
         ret = func(*args, **kwargs), None
     except Exception as err: # pylint: disable=W0718
-        ret = None, err
+        setattr(err, 'err_orig_func', getattr(func, '__name__', 'Unknown'))
+        ret = _default, err
         pass
     return ret
 
@@ -69,7 +79,6 @@ def logger_creator_closure(level: int) -> ty.Callable[[str], logging.Logger]:
 
 __all__ = [
     'needler',
-    'may_throw_def',
     'may_throw',
     'logger_creator_closure',
     'value',
