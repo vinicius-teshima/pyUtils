@@ -62,38 +62,63 @@ def may_throw(func: ty.Callable[..., typs._T],
     return ret
 
 def logger_creator_closure(level: int) -> typs.LoggerCreatorTy:
-    def logger_creator(name: str) -> logging.Logger:
-        logger = logging.getLogger(name)
-        logger.setLevel(level)
+    class Lc:
+        ident_level: int = 0
+        name_padding: int = 0
+        count: int = 0
 
-        sh = logging.StreamHandler()
-        fmtr = logging.Formatter(
-            f"[%(asctime)s] [%(levelname)s] [{name}] %(message)s"
-        )
-        sh.setFormatter(fmtr)
-        logger.addHandler(sh)
-        del sh, fmtr
+        def __call__(self, name: str) -> logging.Logger:
+            logger = logging.getLogger(name + str(self.count))
+            self.count += 1
+            logger.setLevel(level)
 
-        return logger
-    return logger_creator
+            ident = ''
+            if self.ident_level > 0:
+                ident = ''.join('    ' for _ in range(self.ident_level-1))
+                ident += '|-- '
+                pass
 
-def logger_creator_mock(name: str) -> logging.Logger:
-    class L(logging.Logger):
-        def debug(self, *_: ty.Any, **__: ty.Any) -> None:
-            return None
-        def info(self, *_: ty.Any, **__: ty.Any) -> None:
-            return None
-        def warning(self, *_: ty.Any, **__: ty.Any) -> None:
-            return None
-        def error(self, *_: ty.Any, **__: ty.Any) -> None:
-            return None
-        def fatal(self, *_: ty.Any, **__: ty.Any) -> None:
-            return None
-        def critical(self, *_: ty.Any, **__: ty.Any) -> None:
-            return None
-        pass
+            sh = logging.StreamHandler()
+            fmtr = logging.Formatter(
+                f"[%(asctime)s] [%(levelname)8s] " \
+                        f" [{name:>20}] {ident}%(message)s"
+            )
+            sh.setFormatter(fmtr)
+            logger.addHandler(sh)
+            del sh, fmtr
 
-    return L(name)
+            return logger
+
+        def new_child(self) -> 'Lc':
+            ret: 'Lc' = Lc()
+            ret.ident_level = self.ident_level + 1
+            ret.count = self.count + 10
+            return ret
+
+    return Lc()
+
+class _LoggerCreatorMock:
+    def __call__(self, name: str) -> logging.Logger:
+        class L(logging.Logger):
+            def debug(self, *_: ty.Any, **__: ty.Any) -> None:
+                return None
+            def info(self, *_: ty.Any, **__: ty.Any) -> None:
+                return None
+            def warning(self, *_: ty.Any, **__: ty.Any) -> None:
+                return None
+            def error(self, *_: ty.Any, **__: ty.Any) -> None:
+                return None
+            def fatal(self, *_: ty.Any, **__: ty.Any) -> None:
+                return None
+            def critical(self, *_: ty.Any, **__: ty.Any) -> None:
+                return None
+            pass
+        return L(name)
+
+    def new_child(self) -> '_LoggerCreatorMock':
+        return _LoggerCreatorMock()
+
+logger_creator_mock = _LoggerCreatorMock()
 
 __all__ = [
     'needler',
