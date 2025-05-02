@@ -77,6 +77,24 @@ def logger_creator_closure(level: int) -> ty.Callable[[str], logging.Logger]:
         return logger
     return logger_creator
 
+def logger_creator_mock(name: str) -> logging.Logger:
+    class L(logging.Logger):
+        def debug(self, *_: ty.Any, **__: ty.Any) -> None:
+            return None
+        def info(self, *_: ty.Any, **__: ty.Any) -> None:
+            return None
+        def warning(self, *_: ty.Any, **__: ty.Any) -> None:
+            return None
+        def error(self, *_: ty.Any, **__: ty.Any) -> None:
+            return None
+        def fatal(self, *_: ty.Any, **__: ty.Any) -> None:
+            return None
+        def critical(self, *_: ty.Any, **__: ty.Any) -> None:
+            return None
+        pass
+
+    return L(name)
+
 __all__ = [
     'needler',
     'may_throw',
