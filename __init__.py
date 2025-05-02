@@ -61,7 +61,7 @@ def may_throw(func: ty.Callable[..., typs._T],
         pass
     return ret
 
-def logger_creator_closure(level: int) -> ty.Callable[[str], logging.Logger]:
+def logger_creator_closure(level: int) -> typs.LoggerCreatorTy:
     def logger_creator(name: str) -> logging.Logger:
         logger = logging.getLogger(name)
         logger.setLevel(level)
