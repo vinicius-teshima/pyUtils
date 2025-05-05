@@ -2,10 +2,10 @@ import io
 import pathlib
 import typing as ty
 
-from . import typs, logger_creator_mock, may_throw
+from . import typs, LoggerCreator, LoggerCreatorMock, may_throw
 
 def read_all(path: pathlib.Path, *,
-             logger_creator: typs.LoggerCreatorTy = logger_creator_mock,
+             logger_creator: LoggerCreator = LoggerCreatorMock(0),
              encoding: str = 'UTF-8') -> typs.MayErrTy[str]:
     logger = logger_creator('file.read_all')
 

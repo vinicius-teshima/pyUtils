@@ -61,43 +61,49 @@ def may_throw(func: ty.Callable[..., typs._T],
         pass
     return ret
 
-def logger_creator_closure(level: int) -> typs.LoggerCreatorTy:
-    class Lc:
-        ident_level: int = 0
-        name_padding: int = 0
-        count: int = 0
+class LoggerCreator:
+    ident_level: int = 0
+    name_padding: int = 0
+    count: int = 0
+    level: int
 
-        def __call__(self, name: str) -> logging.Logger:
-            logger = logging.getLogger(name + str(self.count))
-            self.count += 1
-            logger.setLevel(level)
+    def __init__(self, level: int) -> None:
+        self.level = level
+        pass
 
-            ident = ''
-            if self.ident_level > 0:
-                ident = ''.join('    ' for _ in range(self.ident_level-1))
-                ident += '|-- '
-                pass
+    def __call__(self, name: str) -> logging.Logger:
+        logger = logging.getLogger(name + str(self.count))
+        self.count += 1
+        logger.setLevel(self.level)
 
-            sh = logging.StreamHandler()
-            fmtr = logging.Formatter(
-                f"[%(asctime)s] [%(levelname)8s] " \
-                        f" [{name:>20}] {ident}%(message)s"
-            )
-            sh.setFormatter(fmtr)
-            logger.addHandler(sh)
-            del sh, fmtr
+        ident = ''
+        if self.ident_level > 0:
+            ident = ''.join('    ' for _ in range(self.ident_level-1))
+            ident += '|-- '
+            pass
 
-            return logger
+        sh = logging.StreamHandler()
+        fmtr = logging.Formatter(
+            f"[%(asctime)s] [%(levelname)8s] " \
+                    f" [{name:>20}] {ident}%(message)s"
+        )
+        sh.setFormatter(fmtr)
+        logger.addHandler(sh)
+        del sh, fmtr
 
-        def new_child(self) -> 'Lc':
-            ret: 'Lc' = Lc()
-            ret.ident_level = self.ident_level + 1
-            ret.count = self.count + 10
-            return ret
+        return logger
 
-    return Lc()
+    def new_child(self) -> 'LoggerCreator':
+        ret: 'LoggerCreator' = LoggerCreator(self.level)
+        ret.ident_level = self.ident_level + 1
+        ret.count = self.count + 10
+        return ret
+    pass
 
-class _LoggerCreatorMock:
+class LoggerCreatorMock(LoggerCreator):
+    def __init__(self, level: int) -> None:
+        super().__init__(level)
+        pass
     def __call__(self, name: str) -> logging.Logger:
         class L(logging.Logger):
             def debug(self, *_: ty.Any, **__: ty.Any) -> None:
@@ -115,15 +121,14 @@ class _LoggerCreatorMock:
             pass
         return L(name)
 
-    def new_child(self) -> '_LoggerCreatorMock':
-        return _LoggerCreatorMock()
-
-logger_creator_mock = _LoggerCreatorMock()
+    def new_child(self) -> 'LoggerCreatorMock':
+        return LoggerCreatorMock(0)
 
 __all__ = [
     'needler',
     'may_throw',
-    'logger_creator_closure',
+    'LoggerCreator',
+    'LoggerCreatorMock',
     'value',
     'date',
     'typs',
