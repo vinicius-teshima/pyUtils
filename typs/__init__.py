@@ -11,6 +11,8 @@ ConnTy = psy.extensions.connection
 CurTy = psy.extensions.cursor
 
 DictTy = ty.Dict[str, _T]
+MapTy = ty.MutableMapping[str, _T]
+ImuMapTy = ty.Mapping[str, _T]
 ListDictTy = ty.List[DictTy[_T]]
 MayDictTy = ty.Optional[DictTy[_T]]
 MayListTy = ty.Optional[ty.List[_T]]
@@ -26,6 +28,8 @@ __all__ = [
     'ConnTy',
     'CurTy',
     'DictTy',
+    'MapTy',
+    'ImuMapTy',
     'ListDictTy',
     'MayDictTy',
     'MayListTy',
