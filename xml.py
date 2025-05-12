@@ -1,6 +1,7 @@
+import logging
 import typing as ty
 
-from . import typs
+from . import typs, value, LoggerCreator, LoggerCreatorMock
 
 
 class InvalidXMLStructureError(Exception):
@@ -9,9 +10,19 @@ class InvalidXMLStructureError(Exception):
         pass
     pass
 
+class InvalidXPathError(Exception):
+    def __init__(self, xpath: str, reason: ty.Optional[str] = None):
+        if reason is None:
+            super().__init__(f"XPath inválido: '{xpath}'.")
+        else:
+            super().__init__(f"XPath inválido: '{xpath}': {reason}.")
+            pass
+        pass
+    pass
+
 class XMLTagNotFoundError(InvalidXMLStructureError):
     def __init__(self, tag: str, xml: 'XMLDict'):
-        path: str = xml.get_path()
+        path: str = xml.get_xpath()
         msg: str = f"Tag '{tag}' não encontrada dentro de {path}"
         super().__init__(msg)
         pass
@@ -21,15 +32,15 @@ class XMLDict(ty.Dict[str, ty.Any]):
     parent: ty.Optional['XMLDict'] = None
     tag: ty.Optional[str] = None
 
-    def get_path(self) -> str:
-        path: str = ''
+    def get_xpath(self) -> str:
+        path: str
 
         if self.tag is None or self.parent is None:
             return ''
 
-        path = self.parent.get_path()
-        if path != '':
-            path += '.'
+        path = '/' + self.parent.get_xpath()
+        if path != '/':
+            path += '/'
             pass
 
         path += self.tag
@@ -55,6 +66,56 @@ class XMLDict(ty.Dict[str, ty.Any]):
         dict.__setitem__(self, key, [tmp])
         pass
     pass
+
+def get_xpath(xml: XMLDict, xpath: str, *,
+              logger_creator: LoggerCreator = LoggerCreatorMock(0)
+              ) -> typs.MayErrTy[XMLDict]:
+    err: ty.Optional[Exception]
+    ret: XMLDict
+
+    logger: logging.Logger
+    logger = logger_creator('xml.get_xpath')
+
+    if len(xpath) == 0 \
+            or xpath[0] != '/' \
+            or xpath[-1] == '/' \
+            or ('[' in xpath and ']' not in xpath) \
+            or (']' in xpath and '[' not in xpath):
+        logger.error('XPath invalido: \'%s\'.', xpath)
+        return XMLDict(), InvalidXPathError(xpath)
+
+    ret = xml
+    for tag in xpath.split('/')[1:]:
+        if tag[0] == '[' or tag[0] == ']':
+            logger.error('XPath invalido: \'%s\'.', xpath)
+            return XMLDict(), InvalidXPathError(xpath)
+
+        if '[' in tag:
+            index: int
+            index, err = value.to_int(tag[tag.index('[')+1 : tag.index(']')])
+            if err is not None:
+                logger.error('XPath invalido: \'%s\': \'%s\'.',
+                             xpath, repr(err))
+                return XMLDict(), InvalidXPathError(xpath, repr(err))
+
+            ret = ret[tag[:tag.index('[')]]
+            if isinstance(ret, list) is False:
+                logger.error('Tag \'%s\' não encontrada no caminho \'%s\'.',
+                             tag, xpath)
+                return XMLDict(), XMLTagNotFoundError(tag, ret)
+
+            ret = ret[index] # type: ignore
+            continue
+
+        if isinstance(ret, XMLDict) is False \
+                or tag not in ret:
+            logger.error('Tag \'%s\' não encontrada no caminho \'%s\'.',
+                         tag, xpath)
+            return XMLDict(), XMLTagNotFoundError(tag, ret)
+
+        ret = ret[tag]
+        pass
+    return ret, None
 
 def to_dict(xml: str) -> typs.MayErrTy[XMLDict]:
     if '<' not in xml \
