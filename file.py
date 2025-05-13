@@ -4,14 +4,14 @@ import typing as ty
 
 from . import typs, LoggerCreator, LoggerCreatorMock, may_throw
 
-def read_all(path: pathlib.Path, *,
+def read_all(path: ty.Union[pathlib.Path, str], *,
              logger_creator: LoggerCreator = LoggerCreatorMock(0),
              encoding: str = 'UTF-8') -> typs.MayErrTy[str]:
     logger = logger_creator('file.read_all')
 
     logger.info('Abrindo arquivo para leitura: \'%s\'.', path)
     file: ty.Optional[io.TextIOWrapper]
-    file, err = may_throw(path.open, 'r', encoding=encoding)
+    file, err = may_throw(open, path, 'r', encoding=encoding)
     if file is None or err is not None:
         logger.error('Falha em abrir arquivo para leitura: \'%s\'.', repr(err))
         return '', err
