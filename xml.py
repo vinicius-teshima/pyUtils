@@ -161,7 +161,7 @@ def to_dict(xml: str) -> typs.MayErrTy[XMLDict]:
         key: str
         value: str
         key, value = t.split('>')
-        if key.endswith('/'):
+        if key[-1] == '/':
             key = _treat_key(key)
             cur[key] = NotImplementedError('ValueLess XML Leaf')
             continue
