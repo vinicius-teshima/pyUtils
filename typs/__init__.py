@@ -21,6 +21,19 @@ MayErrTy = ty.Tuple[_T, ty.Optional[Exception]]
 
 LoggerCreatorTy = ty.Callable[[str], logging.Logger]
 
+class CNPJ(str):
+    @staticmethod
+    def is_valid(s: str) -> bool:
+        if len(s) != 14:
+            return False
+        return True
+
+    def raiz(self) -> str:
+        return self[:8]
+    def ordem(self) -> str:
+        return self[8:]
+    pass
+
 __all__ = [
     'esocial',
     'erp',
