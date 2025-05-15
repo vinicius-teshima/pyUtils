@@ -70,7 +70,7 @@ class XMLDict(ty.Dict[str, ty.Any]):
 
 def get_xpath(xml: XMLDict, xpath: str, *,
               logger_creator: LoggerCreator = LoggerCreatorMock(0)
-              ) -> typs.MayErrTy[XMLDict]:
+              ) -> typs.MayErrTy[ty.Union[XMLDict, ty.List[XMLDict], str]]:
     err: ty.Optional[Exception]
     ret: XMLDict
 
