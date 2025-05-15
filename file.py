@@ -2,7 +2,9 @@ import io
 import pathlib
 import typing as ty
 
-from . import typs, LoggerCreator, LoggerCreatorMock, may_throw
+from . import typs
+from .logger import LoggerCreator, LoggerCreatorMock
+from .mt import may_throw
 
 def read_all(path: ty.Union[pathlib.Path, str], *,
              logger_creator: LoggerCreator = LoggerCreatorMock(0),

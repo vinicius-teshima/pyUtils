@@ -1,3 +1,6 @@
+import sys
+import uuid
+import logging
 import dataclasses
 import typing as ty
 
@@ -6,7 +9,8 @@ import psycopg2.extras
 
 from . import execute, cursor
 
-from .. import typs, may_throw
+from .. import typs
+from ..mt import may_throw
 
 class DBInvalidStateError(Exception):
     def __init__(self, msg: str):
@@ -51,9 +55,60 @@ class ConnCreator:
         return conn, err
     pass
 
+class DBLoggerHandler(logging.Handler):
+    conn: typs.ConnTy
+    user: str
+    modulo: int
+    sessao: uuid.UUID
+    table: str
+    _query: str
+    _params: typs.MapTy[ty.Any]
+
+    def __init__(self, level: int
+                     , conn: typs.ConnTy
+                     , user: str
+                     , modulo: int
+                     , sessao: uuid.UUID
+                     , *, table: str = 'persona.logs') -> None:
+        super().__init__()
+
+        self.conn = conn
+
+        self.user = user
+        self.modulo = modulo
+        self.sessao = sessao
+        self.table = table
+
+        self._query = f"""
+INSERT INTO {self.table}(level, usuario, modulo, sessao, mensagem)
+VALUES(%(level)s, %(usuario)s, %(modulo)s, %(sessao)s, %(mensagem)s)
+        """
+        self._params = {
+            'usuario': self.user,
+            'modulo': self.modulo,
+            'sessao': self.sessao,
+        }
+        pass
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self._params['level'] = record.levelname
+        self._params['mensagem'] = record.getMessage()
+
+        err = execute.execute(self.conn, self._query, self._params)
+        if err is not None:
+            print(f"Falha ao tentar salvar log no banco." \
+                    f" Erro: \'{repr(err)}\'." \
+                    f" Query: \'{self._query}\'." \
+                    f"Params: \'{self._params}\'.")
+            pass
+        pass
+    pass
+
+
 __all__ = [
     'DBInvalidStateError',
     'execute',
     'cursor',
     'ConnCreator',
+    'DBLoggerHandler',
 ]

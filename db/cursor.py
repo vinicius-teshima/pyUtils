@@ -1,6 +1,7 @@
 import typing as ty
 
-from .. import may_throw, typs, exceptions
+from .. import typs, exceptions
+from ..mt import may_throw
 
 def fetchall(cur: typs.CurTy) -> typs.MayErrTy[typs.ListDictTy[ty.Any]]:
     res, err = may_throw(cur.fetchall)

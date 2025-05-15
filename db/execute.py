@@ -1,12 +1,13 @@
 import typing as ty
 
-from .. import typs, may_throw
+from .. import typs
+from ..mt import may_throw
 
 from . import cursor
 
 def execute(conn: typs.ConnTy,
             query: str,
-            params: typs.DictTy[ty.Any], *,
+            params: typs.ImuMapTy[ty.Any], *,
             do_commit: bool = True,
             do_rollback_on_error: bool = True
             ) -> ty.Optional[Exception]:
@@ -25,7 +26,7 @@ def execute(conn: typs.ConnTy,
 
 def fetchall(conn: typs.ConnTy,
              query: str,
-             params: typs.DictTy[ty.Any], *,
+             params: typs.ImuMapTy[ty.Any], *,
              do_commit: bool = True,
              do_rollback_on_error: bool = True
              ) -> typs.MayErrTy[typs.ListDictTy[ty.Any]]:
@@ -44,7 +45,7 @@ def fetchall(conn: typs.ConnTy,
 
 def fetchone(conn: typs.ConnTy,
              query: str,
-             params: typs.DictTy[ty.Any], *,
+             params: typs.ImuMapTy[ty.Any], *,
              do_commit: bool = True,
              do_rollback_on_error: bool = True
              ) -> typs.MayErrTy[typs.DictTy[ty.Any]]:

@@ -1,7 +1,8 @@
 import logging
 import typing as ty
 
-from . import typs, value, LoggerCreator, LoggerCreatorMock
+from . import typs, value
+from .logger import LoggerCreator, LoggerCreatorMock
 
 
 class InvalidXMLStructureError(Exception):
