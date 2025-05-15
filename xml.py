@@ -72,6 +72,7 @@ def get_xpath(xml: XMLDict, xpath: str, *,
               logger_creator: LoggerCreator = LoggerCreatorMock(0)
               ) -> typs.MayErrTy[ty.Union[XMLDict, ty.List[XMLDict], str]]:
     err: ty.Optional[Exception]
+    tmp: ty.Any
     ret: XMLDict
 
     logger: logging.Logger
@@ -90,6 +91,36 @@ def get_xpath(xml: XMLDict, xpath: str, *,
         if tag[0] == '[' or tag[0] == ']':
             logger.error('XPath invalido: \'%s\'.', xpath)
             return XMLDict(), InvalidXPathError(xpath)
+        if tag == '*':
+            if isinstance(ret, str) is True:
+                logger.error('Tag \'%s\' não encontrada no caminho \'%s\'.',
+                             tag, xpath)
+                return XMLDict(), XMLTagNotFoundError(tag, ret)
+
+            ind: int = xpath.index('*')
+            if isinstance(ret, XMLDict) is True:
+                for r in ret.keys():
+                    tmp, err = get_xpath(
+                        ret[r], xpath[ind+1:],
+                        logger_creator=logger_creator.new_child()
+                    )
+                    if err is not None:
+                        continue
+                    return tmp, None
+            else:
+                for _r in ret:
+                    tmp, err = get_xpath(
+                        ty.cast(XMLDict, _r), xpath[ind+1:],
+                        logger_creator=logger_creator.new_child()
+                    )
+                    if err is not None:
+                        continue
+                    return tmp, None
+                pass
+
+            logger.error('Tag \'%s\' não encontrada no caminho \'%s\'.',
+                         tag, xpath)
+            return XMLDict(), XMLTagNotFoundError(tag, ret)
 
         if '[' in tag:
             index: int
