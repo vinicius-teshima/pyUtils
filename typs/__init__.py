@@ -34,6 +34,14 @@ class CNPJ(str):
         return self[8:]
     pass
 
+class CPF(str):
+    @staticmethod
+    def is_valid(s: str) -> bool:
+        if len(s) != 11:
+            return False
+        return True
+    pass
+
 __all__ = [
     'esocial',
     'erp',
