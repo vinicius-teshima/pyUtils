@@ -1,4 +1,5 @@
 import logging
+import pathlib
 import typing as ty
 
 import psycopg2 as psy
@@ -20,6 +21,8 @@ MayListDictTy = ty.Optional[ListDictTy[_T]]
 MayErrTy = ty.Tuple[_T, ty.Optional[Exception]]
 
 LoggerCreatorTy = ty.Callable[[str], logging.Logger]
+
+PathTy = ty.Union[str, pathlib.Path]
 
 class CNPJ(str):
     @staticmethod

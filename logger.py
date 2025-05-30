@@ -9,17 +9,20 @@ class LoggerCreator:
     name_padding: int = 0
     count: int = 0
     level: int
+    file_path: ty.Optional[typs.PathTy]
     conn: ty.Optional[typs.ConnTy]
     user: ty.Optional[str]
     modulo: ty.Optional[int]
     sessao: ty.Optional[uuid.UUID]
 
-    def __init__(self, level: int
+    def __init__(self, level: int, *
+                     , file_path: ty.Optional[typs.PathTy] = None
                      , conn: ty.Optional[typs.ConnTy] = None
                      , user: ty.Optional[str] = None
                      , modulo: ty.Optional[int] = None
                      , sessao: ty.Optional[uuid.UUID] = None) -> None:
         self.level = level
+        self.file_path = file_path
         self.conn = conn
         self.user = user
         self.modulo = modulo
@@ -46,14 +49,14 @@ class LoggerCreator:
             ident += '|-- '
             pass
 
-        sh = logging.StreamHandler()
         fmtr = logging.Formatter(
-            f"[%(asctime)s] [%(levelname)8s] " \
-                    f" [{name:>20}] {ident}%(message)s"
+            f"[%(asctime)s] [%(levelname)8s] [{name:>20}] {ident}%(message)s"
         )
+
+        sh = logging.StreamHandler()
         sh.setFormatter(fmtr)
         logger.addHandler(sh)
-        del sh, fmtr
+        del sh
 
         if self.conn is not None:
             assert self.user is not None
@@ -64,11 +67,23 @@ class LoggerCreator:
             logger.addHandler(dblh)
             pass
 
+        if self.file_path is not None:
+            fh = logging.FileHandler(self.file_path)
+            fh.setFormatter(fmtr)
+            logger.addHandler(fh)
+            pass
+
         return logger
 
     def new_child(self) -> 'LoggerCreator':
-        ret: 'LoggerCreator' = LoggerCreator(self.level, self.conn, self.user,
-                                             self.modulo, self.sessao)
+        ret: 'LoggerCreator' = LoggerCreator(
+            self.level,
+            file_path=self.file_path,
+            conn=self.conn,
+            user=self.user,
+            modulo=self.modulo,
+            sessao=self.sessao
+        )
         ret.ident_level = self.ident_level + 1
         ret.count = self.count + 10
         return ret
