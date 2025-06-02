@@ -7,3 +7,9 @@ class NotFoundError(Exception):
 
 class InvalidParameterError(Exception):
     pass
+
+class InvalidReturnError(Exception):
+    pass
+
+class NonZeroExitError(Exception):
+    pass
