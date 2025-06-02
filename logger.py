@@ -77,6 +77,37 @@ class LoggerCreator:
 
         return logger
 
+    def test_db_logger(self) -> ty.Optional[Exception]:
+        err: ty.Optional[Exception] = None
+
+        if self.conn is None:
+            return None
+
+        logger: logging.Logger
+        logger = self('test_db_logger')
+
+        msg: str = 'Teste de salvar logs no banco de dados.'
+        logger.log(self.level, msg)
+
+        _, err = db.execute.fetchone(
+            self.conn,
+            '''
+SELECT id
+  FROM persona.logs W
+ WHERE level = %(level)s
+   AND sessao = %(sessao)s
+   AND usuario = %(user)s
+   AND modulo = %(modulo)s
+''',
+            {
+                'level' : logging.getLevelName(self.level),
+                'sessao': self.sessao,
+                'user'  : self.user,
+                'modulo': self.modulo
+            }
+        )
+        return err
+
     def new_child(self) -> 'LoggerCreator':
         ret: 'LoggerCreator' = LoggerCreator(
             self.level,
@@ -111,6 +142,9 @@ class LoggerCreatorMock(LoggerCreator):
                 return None
             pass
         return L(name)
+
+    def test_db_logger(self) -> ty.Optional[Exception]:
+        return None
 
     def new_child(self) -> 'LoggerCreatorMock':
         return LoggerCreatorMock(0)
