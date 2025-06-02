@@ -4,11 +4,12 @@ import typing as ty
 
 from . import typs, db
 
+_COUNT: int = 0
+
 # pylint: disable-next=R0902
 class LoggerCreator:
     ident_level: int = 0
     name_padding: int = 0
-    count: int = 0
     level: int
     file_path: ty.Optional[typs.PathTy]
     conn: ty.Optional[typs.ConnTy]
@@ -41,8 +42,9 @@ class LoggerCreator:
         pass
 
     def __call__(self, name: str) -> logging.Logger:
-        logger = logging.getLogger(name + str(self.count))
-        self.count += 1
+        global _COUNT # pylint: disable=W0603
+        logger = logging.getLogger(name + str(_COUNT))
+        _COUNT += 1
         logger.setLevel(self.level)
 
         ident = ''
@@ -118,7 +120,6 @@ SELECT id
             sessao=self.sessao
         )
         ret.ident_level = self.ident_level + 1
-        ret.count = self.count + 10
         return ret
     pass
 
