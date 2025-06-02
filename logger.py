@@ -4,6 +4,7 @@ import typing as ty
 
 from . import typs, db
 
+# pylint: disable-next=R0902
 class LoggerCreator:
     ident_level: int = 0
     name_padding: int = 0
@@ -15,6 +16,7 @@ class LoggerCreator:
     modulo: ty.Optional[int]
     sessao: ty.Optional[uuid.UUID]
 
+    # pylint: disable-next=R0913
     def __init__(self, level: int, *
                      , file_path: ty.Optional[typs.PathTy] = None
                      , conn: ty.Optional[typs.ConnTy] = None

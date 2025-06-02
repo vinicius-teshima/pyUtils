@@ -28,6 +28,7 @@ class ConnInfo:
     port: str
     pass
 
+# pylint: disable-next=R0903
 class ConnCreator:
     conn_info: ConnInfo
 
@@ -64,6 +65,7 @@ class DBLoggerHandler(logging.Handler):
     _query: str
     _params: typs.MapTy[ty.Any]
 
+    # pylint: disable-next=R0913
     def __init__(self, level: int
                      , conn: typs.ConnTy
                      , user: str

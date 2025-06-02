@@ -1,7 +1,10 @@
 import logging
 import typing as ty
 
-from . import typs, value
+from . import (
+    typs,
+    value as values
+)
 from .logger import LoggerCreator, LoggerCreatorMock
 
 
@@ -48,6 +51,7 @@ class XMLDict(ty.Dict[str, ty.Any]):
 
         return path
 
+    # pylint: disable-next=W0621
     def __setitem__(self, key: str, value: ty.Any) -> None:
         if isinstance(value, XMLDict) is True:
             value.parent = self
@@ -68,6 +72,7 @@ class XMLDict(ty.Dict[str, ty.Any]):
         pass
     pass
 
+# pylint: disable-next=R0911,R0912
 def get_xpath(xml: XMLDict, xpath: str, *,
               logger_creator: LoggerCreator = LoggerCreatorMock(0)
               ) -> typs.MayErrTy[ty.Union[XMLDict, ty.List[XMLDict], str]]:
@@ -78,6 +83,7 @@ def get_xpath(xml: XMLDict, xpath: str, *,
     logger: logging.Logger
     logger = logger_creator('xml.get_xpath')
 
+    # pylint: disable-next=R0916
     if len(xpath) == 0 \
             or xpath[0] != '/' \
             or xpath[-1] == '/' \
@@ -124,7 +130,7 @@ def get_xpath(xml: XMLDict, xpath: str, *,
 
         if '[' in tag:
             index: int
-            index, err = value.to_int(tag[tag.index('[')+1 : tag.index(']')])
+            index, err = values.to_int(tag[tag.index('[')+1 : tag.index(']')])
             if err is not None:
                 logger.error('XPath invalido: \'%s\': \'%s\'.',
                              xpath, repr(err))
