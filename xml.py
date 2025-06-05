@@ -68,7 +68,7 @@ class XMLDict(ty.Dict[str, ty.Any]):
             tmp.append(value)
             return
 
-        dict.__setitem__(self, key, [tmp])
+        dict.__setitem__(self, key, [tmp, value])
         pass
     pass
 
@@ -182,7 +182,7 @@ def to_dict(xml: str) -> typs.MayErrTy[XMLDict]:
         if t[0] == '?':
             continue
 
-        if t[0] == '/':
+        if t[0] == '/': # Tag closure
             if was_value is True:
                 was_value = False
                 continue
