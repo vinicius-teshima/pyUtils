@@ -23,6 +23,7 @@ def may_throw(func: ty.Callable[..., typs._T],
               *args: ty.Any,
               _default: ty.Optional[typs._T] = None,
               _prev_err: ty.Optional[Exception] = None,
+              _on_fail_try: ty.Optional[ty.Callable[[], typs._T]] = None,
               **kwargs: ty.Any) -> ty.Tuple[ty.Optional[typs._T],
                                             ty.Optional[Exception]]:
     if _prev_err is not None:
@@ -32,6 +33,13 @@ def may_throw(func: ty.Callable[..., typs._T],
     try:
         ret = func(*args, **kwargs), None
     except Exception as err: # pylint: disable=W0718
+        if _on_fail_try is not None:
+            try:
+                ret = _on_fail_try(), None
+                return ret
+            except: # pylint: disable=W0702
+                pass
+            pass
         setattr(err, 'err_orig_func', getattr(func, '__name__', 'Unknown'))
         ret = _default, err
         pass
